@@ -55,7 +55,7 @@ resource "azurerm_key_vault_access_policy" "currentUserAccesPolicy" {
   ]
 
   certificate_permissions = [
-    "Get", "Create", "Delete", "Purge"
+    "Get", "Create", "Delete", "Purge", "List"
   ]
 }
 
