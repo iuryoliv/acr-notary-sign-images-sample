@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v3
     - name: ACR build
       run: |
-        az acr build --registry <registry-name> -t <image-name>:${{ github.run_id }} .
+        az acr build --registry <registry-name> -t web-app-sample:${{ github.run_id }} .
     - uses: Duffney/setup-notation@v0.1.0
       name: Setup Notation CLI
       with:
@@ -31,4 +31,4 @@ jobs:
         NOTATION_USERNAME: ${{ secrets.NOTATION_USERNAME }}
         NOTATION_PASSWORD: ${{ secrets.NOTATION_PASSWORD }}
       with:
-        image-name: <registry-name>.azurecr.io/<image-name>:${{ github.run_id }}
+        image-name: <registry-name>.azurecr.io/web-app-sample:${{ github.run_id }}
