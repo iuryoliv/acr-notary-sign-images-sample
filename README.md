@@ -1,22 +1,26 @@
-# Project Name
+# Sign ACR Container Images with Notary
 
-(short, 1-3 sentenced, description of the project)
+In this tutorial, you'll learn how to digitally sign a container image hosted in Azure Container Registry using Notary with a GitHub workflow. 
 
-## Getting Started
+Notary is a CNCF project that provides a set of tools that help you sign, store, and verify OCI artifacts using OCI-conformant registries. You'll use Notary's command-line tool, notation, to sign a container image that's pushed to Azure container registry using several GitHub Actions to automate the process. 
 
-### Prerequisites
+By the end of this tutorial, you'll have a GitHub workflow that builds a simple Go web app container, pushes the image to ACR, and signs the container image with Notation. 
+
+## Prerequisites
 
 - Azure subscription
 - GitHub account
 - Terraform
 
-### Get started
+## Get started, use this template
 
 1. Click the `Use this template` button at the top of the page
 2. Select an **Owner** and enter a **repository name**, then click `Create repository from template`
 3. Use `git clone` to pull the repository to your local development enviornment
 
-### Set up your environment
+## Set up your environment
+
+Before you can begin working on the GitHub workflow there are several Azure resources that need to be deployed first. Follow the below instructions to deploy the required Azure infrastructure using Terraform.
 
 1. Create a service principal
 
@@ -70,46 +74,61 @@
     > **TIP**
     > **Store the password value in a secure place**. You'll need to store it as a GitHub secret later in the demo.
 
-### Create GitHub Action Secrets
+## Create GitHub Action Secrets
 
-Create a GitHub Action secret for authenticating to Azure.
-
-1. Click the `Settings` on the repository
-2. Select `Secrets`, then `Actions`, and Click `New repository secret`
-3. Enter **AZURE_CREDENTIALS** as the secret name
-4. Paste the JSON object from the `az ad sp` issued previously
-5. Click **Add secret**
-
-Create GitHub Action secrets for Notation username.
+To improve the security of your GitHub workflow, you'll create several GitHub Action Secrets to securely pass the credentials to your workflow.
 
 1. Click the `Settings` on the repository
-2. Select `Secrets`, then `Actions`, and Click `New repository secret`
-3. Enter `NOTATION_USERNAME` as the secret name
-4. Enter the name of the Azure Container Registry token generated previously
+2. Select `Secrets`, then `Actions`, 
+3. Then click `New repository secret`
+3. Enter the secret name and value
 5. Click **Add secret**
 
-Create GitHub Action secrets for Notation password.
+Repeat steps 3-5 for each secrets listed below.
 
-1. Click the `Settings` on the repository
-2. Select `Secrets`, then `Actions`, and Click `New repository secret`
-3. Enter `NOTATION_PASSWORD` as the secret name
-4. Enter the password of the Azure Container Registry token generated previously
-5. Click **Add secret**
-
-### Update the GitHub Workflow
-
-1. Open `.github/workflows/docker-image.yml`
-2. Replace `<registry-name>` with the name of your Azure Container Registry
-3. Replace `<image-name>` with the name of your Docker image
-4. Replace `<key-name>` with the name of the signing key for notation
-5. Replace `<certificate-key-id>` with the keyId of the certificate used for signing
-6. Use git to add, commit, and push your changes.
-7. Browse to the repository on GitHub, and click the **Actions** tab.
-
+Name | Value | 
+---------|----------|
+ AZURE_CREDENTIALS | JSON object of the Azure Service Principal output from the `az ad sp create-for-rbac` command | 
+ NOTATION_USERNAME | Name of the Azure Container Registry token | 
+ NOTATION_PASSWORD | Password of the Azure Container Registry token | 
 
 > **TIP**
-> **To find the keyId of the certificate, run `az keyvault certificate show --name certName --vault-name <vaultName>  --query kid -o tsv`
+> In case you didn't save the JSON output, rerunning the `az ad sp create-for-rbac` command will reset the password of the service principal and generate a new JSON object.
 
+## Update the GitHub Workflow
+
+With the Azure infrastructure deployed and your GitHub Actions secrets configured, the last thing you have to do is update the GitHub workflow file.
+
+1. Open the GitHub workflow file located at `.github/workflows/docker-image.yml`.
+2. Replace all *placeholder* values from the table below with the appropriate information.
+3. Issue the `git add`, `git commit`, and `git push` commands to push your changes to GitHub.
+
+Placeholder | Description | AzCli command
+---------|----------|----------
+ `<registry-name>` | Name of the Azure Container Registry | az acr list --query '[].name' -o tsv 
+ `<key-name>` | Name of the signing certificate | az keyvault certificate list --vault-name $vaultName --query '[].name' -o tsv
+ `<certificate-key-id>` | Key Id of the Azure Key Vault certificate | az keyvault certificate show --name example --vault-name $vaultName  --query kid -o tsv
+
+Replace `$vaultName` with the name of your Azure Key Vault instance.
+
+## Confirm the container image was signed
+
+Congratulations! You've made it to the end of the tutorial. Your final tasks are to confirm the workflow executed properly and that there is a digital signature attached to the container image hosted on Azure Container Registry.
+
+**View the GitHub workflow run**
+
+1. To confirm your workflow executed properly, **open the repository** on GitHub and click the **Actions** tab. You should see a workflow run that is green.
+2. Click to expand the steps within the workflow and examine the actions taken to sign the container image.
+
+**Confirm the digital signature exists**
+
+1. Open the Azure portal by going to [portal.azure.com](portal.azure.com)
+2. Navigate to your Azure Container Registry instance
+3. Under Services, select *Repositories*
+4. Select the web-app-sample repository
+5. Select the most recent tag
+6. Click the **Artifact** tab
+7. Confirm cncf.notary.v2.signature exists on the artifact
 
 ## Resources
 
