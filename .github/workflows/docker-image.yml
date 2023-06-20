@@ -31,4 +31,4 @@ jobs:
         NOTATION_USERNAME: ${{ secrets.NOTATION_USERNAME }}
         NOTATION_PASSWORD: ${{ secrets.NOTATION_PASSWORD }}
       with:
-        image-name: notary4ec5e2b6acr.azurecr.io/web-app-sample:${{ github.run_id }}
+        image-name: notary4ec5e2b6acr.azurecr.io/web-app-sample:${{ github.run_id }}  
